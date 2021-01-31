@@ -4,7 +4,6 @@ import PostMessage from '../models/postMessage.js';
 export const getPosts = async (req, res) => {
 	try {
 		const postMessages = await PostMessage.find();
-		console.log(postMessages);
 		res.status(200).json(postMessages);
 	} catch (error) {
 		res.status(404).json({ message: error.message });
@@ -34,5 +33,32 @@ export const updatePost = async (req, res) => {
 		new: true,
 	});
 
+	res.status(201).json(updatedPost);
+};
+
+export const deletePost = async (req, res) => {
+	const { id } = req.params;
+
+	if (!mongoose.Types.ObjectId.isValid(id)) {
+		return res.status(403).send('No post found');
+	}
+
+	await PostMessage.findByIdAndRemove(id);
+	res.status(201).json({ message: 'Deleted successfully' });
+};
+
+export const likePost = async (req, res) => {
+	const { id } = req.params;
+
+	if (!mongoose.Types.ObjectId.isValid(id)) {
+		return res.status(403).send('No post found');
+	}
+
+	const post = await PostMessage.findById(id);
+	const updatedPost = await PostMessage.findByIdAndUpdate(
+		id,
+		{ likeCount: post.likeCount + 1 },
+		{ new: true }
+	);
 	res.status(201).json(updatedPost);
 };
